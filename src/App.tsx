@@ -149,7 +149,7 @@ function App() {
 
   return (
     <div className="app-root">
-      <h1 className="app-title">EMV QR Generator with Static + Dynamic TCV</h1>
+      <h1 className="app-title">EMV QR Generator</h1>
 
       <div className="app-layout">
         <div className="card">
