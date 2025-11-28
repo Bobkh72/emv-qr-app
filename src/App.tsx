@@ -182,7 +182,7 @@ function App() {
           />
 
           {/* TCV29 */}
-          <label className="field-label">Terminal ID(29.05)</label>
+          <label className="field-label">Terminal ID (29.05)</label>
           <input className="field-input"
             value={tcv29}
             onChange={(e) => setTcv29(e.target.value)}
