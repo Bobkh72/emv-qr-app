@@ -2,12 +2,12 @@
 // FIX: Render TypeScript error for module "qrcode"
 // ---------------------------------------------------------
 import { useState } from "react";
-import * as QRCode from "qrcode";         // <-- FIXED
+import * as QRCode from "qrcode";
 import "./App.css";
 
 
 // -----------------------
-// TCV GENERATOR: STATIC + DYNAMIC
+// TCV GENERATOR
 // -----------------------
 function generateTcv(
   amount: string,
@@ -15,7 +15,6 @@ function generateTcv(
   merchantAccount: string,
   useTimestamp: boolean = true
 ): string {
-
   const raw = useTimestamp
     ? `${amount}|${currency}|${merchantAccount}|${Date.now()}`
     : `${amount}|${currency}|${merchantAccount}`;
@@ -27,6 +26,7 @@ function generateTcv(
 
   return hash.toString().padStart(6, "0");
 }
+
 
 // -----------------------
 // CRC FUNCTION
@@ -44,6 +44,7 @@ const computeCrc16 = (data: string): string => {
   return crc.toString(16).toUpperCase().padStart(4, "0");
 };
 
+
 // -----------------------
 // TLV Helper
 // -----------------------
@@ -54,13 +55,18 @@ const tlv = (id: string, value: string): string => {
 
 
 function App() {
-  // MAIN FIELDS
-  const [merchantAccount] = useState("100000010000331");
-  const [timestamp] = useState("240712101550");
-  const [tcv29] = useState("10000011"); // constant
+
+  // -----------------------------
+  // USER-EDITABLE FIELDS (NEW)
+  // -----------------------------
+  const [merchantAccount, setMerchantAccount] = useState("100000010000331");
+  const [timestamp, setTimestamp] = useState("240712101550");
+  const [tcv29, setTcv29] = useState("10000011");
 
   const [amount, setAmount] = useState("100.8");
-  const [currency, setCurrency] = useState("840");
+
+  // Dropdown: USD / LBP
+  const [currency, setCurrency] = useState("840");  // default USD
 
   const [tcvStatic, setTcvStatic] = useState("453999");
   const [tcvDynamic, setTcvDynamic] = useState("795679");
@@ -73,11 +79,9 @@ function App() {
   // ----------------------------------------------------
   const buildEmvPayload = (): string => {
 
-    // Generate dynamic TCV
     const dyn = generateTcv(amount, currency, merchantAccount, true);
     setTcvDynamic(dyn);
 
-    // Generate static TCV
     const stc = generateTcv(amount, currency, merchantAccount, false);
     setTcvStatic(stc);
 
@@ -88,8 +92,7 @@ function App() {
 
     const tag05 = tlv(
       "05",
-      tlv("01", "CCM") +
-      tlv("02", "MOF")
+      tlv("01", "CCM") + tlv("02", "MOF")
     );
 
     const tag29 = tlv(
@@ -108,24 +111,13 @@ function App() {
 
     const tag62 = tlv(
       "62",
-      tlv("02", dyn) +    // correct dynamic TCV
-      tlv("04", stc)      // correct static TCV
+      tlv("02", dyn) + tlv("04", stc)
     );
 
     const withoutCrc =
-      tag00 +
-      tag01 +
-      tag02 +
-      tag05 +
-      tag29 +
-      tag52 +
-      tag53 +
-      tag54 +
-      tag58 +
-      tag59 +
-      tag60 +
-      tag62 +
-      "6304";
+      tag00 + tag01 + tag02 + tag05 + tag29 +
+      tag52 + tag53 + tag54 + tag58 + tag59 + tag60 +
+      tag62 + "6304";
 
     const crc = computeCrc16(withoutCrc);
 
@@ -152,20 +144,56 @@ function App() {
       <h1 className="app-title">EMV QR Generator</h1>
 
       <div className="app-layout">
+
+        {/* LEFT SIDE */}
         <div className="card">
           <h3 className="card-title">Transaction Inputs</h3>
 
+          {/* Amount */}
           <label className="field-label">Amount</label>
-          <input className="field-input" value={amount}
-                 onChange={(e) => setAmount(e.target.value)} />
+          <input className="field-input"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
 
+          {/* Currency Dropdown */}
           <label className="field-label">Currency</label>
-          <input className="field-input" value={currency}
-                 onChange={(e) => setCurrency(e.target.value)} />
+          <select
+            className="field-input"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+          >
+            <option value="840">USD</option>
+            <option value="422">LBP</option>
+          </select>
 
+          {/* Merchant Account */}
+          <label className="field-label">Merchant Account (29.00)</label>
+          <input className="field-input"
+            value={merchantAccount}
+            onChange={(e) => setMerchantAccount(e.target.value)}
+          />
+
+          {/* Timestamp */}
+          <label className="field-label">Timestamp (29.01)</label>
+          <input className="field-input"
+            value={timestamp}
+            onChange={(e) => setTimestamp(e.target.value)}
+          />
+
+          {/* TCV29 */}
+          <label className="field-label">TCV-29 (29.05)</label>
+          <input className="field-input"
+            value={tcv29}
+            onChange={(e) => setTcv29(e.target.value)}
+          />
+
+          {/* Static TCV (user may override) */}
           <label className="field-label">Static TCV (62.04)</label>
-          <input className="field-input" value={tcvStatic}
-                 onChange={(e) => setTcvStatic(e.target.value)} />
+          <input className="field-input"
+            value={tcvStatic}
+            onChange={(e) => setTcvStatic(e.target.value)}
+          />
 
           <button className="primary-btn" onClick={handleGenerate}>
             Generate QR
@@ -175,6 +203,7 @@ function App() {
           <input className="field-input" value={tcvDynamic} readOnly />
         </div>
 
+        {/* RIGHT SIDE */}
         <div className="card">
           <h3 className="card-title">Generated Payload</h3>
           <div className="payload-box">
@@ -195,6 +224,7 @@ function App() {
             </a>
           )}
         </div>
+
       </div>
     </div>
   );
