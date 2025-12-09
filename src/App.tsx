@@ -84,7 +84,7 @@ const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
   // Dropdown: USD / LBP
   const [currency, setCurrency] = useState("422");  // default LBP
 
-  const [tcvStatic, setTcvStatic] = useState("453999");
+  const [tcvStatic, setTcvStatic] = useState("");
   const [tcvDynamic, setTcvDynamic] = useState("795679");
 
   const [payload, setPayload] = useState("");
