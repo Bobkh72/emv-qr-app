@@ -214,7 +214,10 @@ const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
             value={tcvStatic}
             onChange={(e) => setTcvStatic(e.target.value)}
           />
- 
+ <label className="field-label" style={{ display: "none" }}> Dynamic TCV (62.02) </label>
+
+<input className="field-input" value={tcvDynamic} readOnly style={{ display: "none" }}/>
+
         </div>
 
         {/* RIGHT SIDE */}
