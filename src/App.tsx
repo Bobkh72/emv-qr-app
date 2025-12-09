@@ -60,13 +60,29 @@ function App() {
   // USER-EDITABLE FIELDS (NEW)
   // -----------------------------
   const [merchantAccount, setMerchantAccount] = useState("100000010000331");
-  const [timestamp, setTimestamp] = useState("240712101550");
+  const getCurrentTimestamp = () => {
+  const now = new Date();
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  return (
+    pad(now.getFullYear() % 100) + // YY
+    pad(now.getMonth() + 1) +      // MM
+    pad(now.getDate()) +           // DD
+    pad(now.getHours()) +          // hh
+    pad(now.getMinutes()) +        // mm
+    pad(now.getSeconds())          // ss
+  );
+};
+
+const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
+
+  //const [timestamp, setTimestamp] = useState("240712101550");
   const [tcv29, setTcv29] = useState("10000011");
 
-  const [amount, setAmount] = useState("100.8");
+  const [amount, setAmount] = useState("3000.00");
 
   // Dropdown: USD / LBP
-  const [currency, setCurrency] = useState("840");  // default USD
+  const [currency, setCurrency] = useState("422");  // default LBP
 
   const [tcvStatic, setTcvStatic] = useState("453999");
   const [tcvDynamic, setTcvDynamic] = useState("795679");
@@ -182,25 +198,23 @@ function App() {
           />
 
           {/* TCV29 */}
-          <label className="field-label">Terminal ID (29.05)</label>
+          <label className="field-label">Terminal ID-29 (29.05)</label>
           <input className="field-input"
             value={tcv29}
             onChange={(e) => setTcv29(e.target.value)}
           />
 
+
+          <button className="primary-btn" onClick={handleGenerate}>
+            Generate QR
+          </button>
           {/* Static TCV (user may override) */}
           <label className="field-label">Static TCV (62.04)</label>
           <input className="field-input"
             value={tcvStatic}
             onChange={(e) => setTcvStatic(e.target.value)}
           />
-
-          <button className="primary-btn" onClick={handleGenerate}>
-            Generate QR
-          </button>
-
-          <label className="field-label">Dynamic TCV (62.02)</label>
-          <input className="field-input" value={tcvDynamic} readOnly />
+ 
         </div>
 
         {/* RIGHT SIDE */}
