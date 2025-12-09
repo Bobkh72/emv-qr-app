@@ -210,10 +210,13 @@ const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
           </button>
           {/* Static TCV (user may override) */}
           <label className="field-label">Static TCV (62.04)</label>
-          <input className="field-input"
-            value={tcvStatic}
-            onChange={(e) => setTcvStatic(e.target.value)}
-          />
+		  <input
+  className="field-input"
+  value={tcvStatic}
+  readOnly
+/>
+
+
  <label className="field-label" style={{ display: "none" }}> Dynamic TCV (62.02) </label>
 
 <input className="field-input" value={tcvDynamic} readOnly style={{ display: "none" }}/>
