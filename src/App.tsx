@@ -7,17 +7,18 @@ import "./App.css";
 
 
 // -----------------------
-// TCV GENERATOR
+// TCV GENERATOR --amount + currency + deviceId + transactionId
 // -----------------------
 function generateTcv(
   amount: string,
   currency: string,
   merchantAccount: string,
+  transactionid: string,
   useTimestamp: boolean = true
 ): string {
   const raw = useTimestamp
-    ? `${amount}|${currency}|${merchantAccount}|${Date.now()}`
-    : `${amount}|${currency}|${merchantAccount}`;
+    ? `${amount}|${currency}|${merchantAccount}|${transactionid}|${Date.now()}`
+    : `${amount}|${currency}|${merchantAccount}|${transactionid}`;
 
   let hash = 0;
   for (let i = 0; i < raw.length; i++) {
@@ -65,7 +66,7 @@ function App() {
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   return (
-    pad(now.getFullYear() % 100) + // YY
+    pad(now.getFullYear() ) + // YY
     pad(now.getMonth() + 1) +      // MM
     pad(now.getDate()) +           // DD
     pad(now.getHours()) +          // hh
@@ -86,19 +87,20 @@ const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
 
   const [tcvStatic, setTcvStatic] = useState("");
   const [tcvDynamic, setTcvDynamic] = useState("795679");
-
+  const [trxid, settrxid] = useState("123456789123");
   const [payload, setPayload] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState("");
+  
 
   // ----------------------------------------------------
   // BUILD EMV PAYLOAD
   // ----------------------------------------------------
   const buildEmvPayload = (): string => {
-
-    const dyn = generateTcv(amount, currency, merchantAccount, true);
+	const MACaddress ="3C5576C7BA57"
+    const dyn = generateTcv(amount, currency, MACaddress,trxid, true);
     setTcvDynamic(dyn);
 
-    const stc = generateTcv(amount, currency, merchantAccount, false);
+    const stc = generateTcv(amount, currency, MACaddress,trxid, false);
     setTcvStatic(stc);
 
     // EMV TAGS
@@ -127,7 +129,7 @@ const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
 
     const tag62 = tlv(
       "62",
-      tlv("02", dyn) + tlv("04", stc)
+      tlv("02", dyn) + tlv("04", stc) + tlv("07", trxid)
     );
 
     const withoutCrc =
@@ -183,6 +185,12 @@ const [timestamp, setTimestamp] = useState(getCurrentTimestamp());
             <option value="422">LBP</option>
           </select>
 
+         {/* Transaction ID   */}
+          <label className="field-label">Transaction ID (62.07)</label>
+          <input className="field-input"
+            value={trxid}
+            onChange={(e) => settrxid(e.target.value)}
+          />
           {/* Merchant Account */}
           <label className="field-label">Merchant Account (29.00)</label>
           <input className="field-input"
