@@ -137,7 +137,7 @@ const [terminalId, setterminalId] = useState("10000011");
     const tag53 = tlv("53", currency);
     const tag54 = tlv("54", amount);
     const tag58 = tlv("58", "LB");
-    const tag59 = tlv("59", "CCM Test Merchant");
+    const tag59 = tlv("59", "Test Merchant");
     const tag60 = tlv("60", "BEIRUT");
 
     // const tag62 = tlv("62", tlv("02", dyn) + tlv("04", stc) + tlv("07", trxid));
