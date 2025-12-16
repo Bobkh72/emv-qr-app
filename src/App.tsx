@@ -208,7 +208,7 @@ const tag62 = tlv("62",
           </select>
 
           {/* Transaction ID */}
-          <label className="field-label">Transaction ID (62.07)</label>
+          <label className="field-label">Transaction ID (62.10)</label>
           <input className="field-input" value={trxid} onChange={(e) => settrxid(e.target.value)} />
 
           {/* Device ID */}
@@ -232,7 +232,7 @@ const tag62 = tlv("62",
           </button>
 
           {/* Static TCV */}
-          <label className="field-label">Static TCV (62.04)</label>
+          <label className="field-label">Static TCV</label>
           <input className="field-input" value={tcvStatic} readOnly />
 
           {/* Dynamic TCV hidden */}
