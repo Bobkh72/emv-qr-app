@@ -66,6 +66,24 @@ async function generateTcv(
 }
 
 // -----------------------
+// 7-DIGIT TCV + ACQUIRER ID ENCODER
+// Spec: MOF POS Integration Specification.txt
+// -----------------------
+function encodeCombinedTcv(tcv: string, acquirerId: string): string {
+  const digits = tcv.padStart(6, "0").slice(0, 6).split("").map(Number);
+  const key = Number(acquirerId);
+  const combined = new Array<number>(7);
+
+  combined[0] = (digits[0] + key) % 10;
+  for (let i = 1; i < 6; i += 1) {
+    combined[i] = (digits[i] + key + combined[i - 1]) % 10;
+  }
+  combined[6] = (key + combined[5]) % 10;
+
+  return combined.join("");
+}
+
+// -----------------------
 // CRC FUNCTION
 // -----------------------
 const computeCrc16 = (data: string): string => {
@@ -109,6 +127,8 @@ const [terminalId, setterminalId] = useState("10000011");
 
   const [tcvStatic, setTcvStatic] = useState("");
   const [tcvDynamic, setTcvDynamic] = useState("795679");
+  const [acquirerId, setAcquirerId] = useState("0");
+  const [encodedWayDesc, setEncodedWayDesc] = useState("");
   const [trxid, settrxid] = useState("123456789123");
 
   const [payload, setPayload] = useState("");
@@ -125,6 +145,8 @@ const [terminalId, setterminalId] = useState("10000011");
 
     const stc = await generateTcv(amount, currency, deviceId, trxid, false);
     setTcvStatic(stc);
+    const wayDesc = encodeCombinedTcv(dyn, acquirerId);
+    setEncodedWayDesc(wayDesc);
 
     // EMV TAGS
     const tag00 = tlv("00", "01");
@@ -140,17 +162,15 @@ const [terminalId, setterminalId] = useState("10000011");
     const tag59 = tlv("59", "Test Merchant");
     const tag60 = tlv("60", "BEIRUT");
 
-    // const tag62 = tlv("62", tlv("02", dyn) + tlv("04", stc) + tlv("07", trxid));
-	//{03=MID de42 15 digits , 04=LoyaltyNumber, 05=deviceid, 06=ConsumerId, 07=TID de41 8, 10=OrderId}
-	
-	//const tag62 = tlv("62",tlv("03",merchantAccount)+ tlv("05", deviceid)  + tlv("10", trxid));
-
-const tag62 = tlv("62",
-  tlv("03", merchantAccount) +
-  tlv("05", deviceId) +
-  tlv("07", terminalId) +
-  tlv("10", trxid)
-);
+    // 62.02 carries the 7-digit combined value described in the MOF spec.
+    const tag62 = tlv(
+      "62",
+      tlv("02", wayDesc) +
+        tlv("03", merchantAccount) +
+        tlv("05", deviceId) +
+        tlv("07", terminalId) +
+        tlv("10", trxid)
+    );
 
     const withoutCrc =
       tag00 +
@@ -215,6 +235,20 @@ const tag62 = tlv("62",
           <label className="field-label">Device ID (62.05)</label>
           <input className="field-input" value={deviceId} onChange={(e) => setDeviceId(e.target.value)} />
 
+          <label className="field-label">Acquirer ID</label>
+          <select className="field-input" value={acquirerId} onChange={(e) => setAcquirerId(e.target.value)}>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+
           {/* Merchant Account */}
           <label className="field-label">Merchant ID (62.03 & 29.00)</label>
           <input className="field-input" value={merchantAccount} onChange={(e) => setmerchantAccount(e.target.value)} />
@@ -235,11 +269,11 @@ const tag62 = tlv("62",
           <label className="field-label">Static TCV</label>
           <input className="field-input" value={tcvStatic} readOnly />
 
-          {/* Dynamic TCV hidden */}
-          <label className="field-label" style={{ display: "none" }}>
-            Dynamic TCV (62.02)
-          </label>
-          <input className="field-input" value={tcvDynamic} readOnly style={{ display: "none" }} />
+          <label className="field-label">Dynamic TCV</label>
+          <input className="field-input" value={tcvDynamic} readOnly />
+
+          <label className="field-label">Way Desc / Encoded TCV (62.02)</label>
+          <input className="field-input" value={encodedWayDesc} readOnly />
         </div>
 
         {/* RIGHT SIDE */}
