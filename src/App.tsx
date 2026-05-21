@@ -69,18 +69,36 @@ async function generateTcv(
 // 7-DIGIT TCV + ACQUIRER ID ENCODER
 // Spec: MOF POS Integration Specification.txt
 // -----------------------
-function encodeCombinedTcv(tcv: string, acquirerId: string): string {
-  const digits = tcv.padStart(6, "0").slice(0, 6).split("").map(Number);
-  const key = Number(acquirerId);
-  const combined = new Array<number>(7);
+function encodeCombinedTcv(tcv: number, key: number): string {
+    if (tcv < 0 || tcv > 999999) {
+        throw new Error("Number must be 6 digits");
+    }
 
-  combined[0] = (digits[0] + key) % 10;
-  for (let i = 1; i < 6; i += 1) {
-    combined[i] = (digits[i] + key + combined[i - 1]) % 10;
-  }
-  combined[6] = (key + combined[5]) % 10;
+    if (key < 0 || key > 9) {
+        throw new Error("Key must be 0-9");
+    }
 
-  return combined.join("");
+    const numStr: string = tcv.toString().padStart(6, '0');
+
+    const digits: number[] = new Array(6);
+
+    // Convert number to digit array
+    for (let i = 0; i < 6; i++) {
+        digits[i] = Number(numStr[i]);
+    }
+
+    // Encode into 7 digits with key diffusion
+    const combined: number[] = new Array(7);
+
+    combined[0] = (digits[0] + key) % 10;
+
+    for (let i = 1; i < 6; i++) {
+        combined[i] = (digits[i] + key + combined[i - 1]) % 10;
+    }
+
+    combined[6] = (key + combined[5]) % 10; // hides key
+
+    return combined.join('');
 }
 
 // -----------------------
@@ -145,7 +163,7 @@ const [terminalId, setterminalId] = useState("10000011");
 
     const stc = await generateTcv(amount, currency, deviceId, trxid, false);
     setTcvStatic(stc);
-    const wayDesc = encodeCombinedTcv(dyn, acquirerId);
+    const wayDesc = encodeCombinedTcv(Number(stc), Number(acquirerId));
     setEncodedWayDesc(wayDesc);
 
     // EMV TAGS
