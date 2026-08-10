@@ -174,7 +174,6 @@ const [terminalId, setterminalId] = useState("10000011");
 
     const tag05 = tlv("05", tlv("01", "MOF") + tlv("02", "CCM"));
 	  const tag29 = tlv("29", tlv("00", merchantAccount) + tlv("01", timestamp));
-    const tag42 = tlv("42", binType);
     const tag52 = tlv("52", "1434");
     const tag53 = tlv("53", currency);
     const tag54 = tlv("54", amount);
@@ -189,7 +188,8 @@ const [terminalId, setterminalId] = useState("10000011");
         tlv("03", merchantAccount) +
         tlv("05", deviceId) +
         tlv("07", terminalId) +
-        tlv("10", trxid)
+        tlv("08", binType) +
+        tlv("10", trxid) 
     );
 
     const withoutCrc =
@@ -198,7 +198,6 @@ const [terminalId, setterminalId] = useState("10000011");
       tag02 +
       tag05 +
       tag29 +
-      tag42 +
       tag52 +
       tag53 +
       tag54 +
@@ -237,7 +236,7 @@ const [terminalId, setterminalId] = useState("10000011");
           <h3 className="card-title">Transaction Inputs</h3>
 
           {/* Bin Type Dropdown */}
-          <label className="field-label">Bin Type 42</label>
+          <label className="field-label">Bin Type (62.08)</label>
           <select className="field-input" value={binType} onChange={(e) => setBinType(e.target.value)}>
             <option value="L">Local</option>
             <option value="I">International</option>
