@@ -148,6 +148,7 @@ const [terminalId, setterminalId] = useState("10000011");
   const [acquirerId, setAcquirerId] = useState("0");
   const [encodedWayDesc, setEncodedWayDesc] = useState("");
   const [trxid, settrxid] = useState("123456789123");
+  const [binType, setBinType] = useState("L");
 
   const [payload, setPayload] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState("");
@@ -172,7 +173,8 @@ const [terminalId, setterminalId] = useState("10000011");
     const tag02 = tlv("02", "EMV");
 
     const tag05 = tlv("05", tlv("01", "MOF") + tlv("02", "CCM"));
-	const tag29 = tlv("29", tlv("00", merchantAccount) + tlv("01", timestamp));
+	  const tag29 = tlv("29", tlv("00", merchantAccount) + tlv("01", timestamp));
+    const tag42 = tlv("42", binType);
     const tag52 = tlv("52", "1434");
     const tag53 = tlv("53", currency);
     const tag54 = tlv("54", amount);
@@ -196,6 +198,7 @@ const [terminalId, setterminalId] = useState("10000011");
       tag02 +
       tag05 +
       tag29 +
+      tag42 +
       tag52 +
       tag53 +
       tag54 +
@@ -232,6 +235,13 @@ const [terminalId, setterminalId] = useState("10000011");
         {/* LEFT SIDE */}
         <div className="card">
           <h3 className="card-title">Transaction Inputs</h3>
+
+          {/* Bin Type Dropdown */}
+          <label className="field-label">Bin Type 42</label>
+          <select className="field-input" value={binType} onChange={(e) => setBinType(e.target.value)}>
+            <option value="L">Local</option>
+            <option value="I">International</option>
+          </select>
 
           {/* Amount */}
           <label className="field-label">Amount 54</label>
